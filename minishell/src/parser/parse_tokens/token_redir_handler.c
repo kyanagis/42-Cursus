@@ -1,0 +1,36 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   token_redir_handler.c                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: kyanagis <kyanagis@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/12/15 04:03:41 by kyanagis          #+#    #+#             */
+/*   Updated: 2025/12/27 11:32:57 by kyanagis         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "parser.h"
+
+static t_redir_kind	as_redir_kind(t_tok_kind kind)
+{
+	if (kind == TOK_LT)
+		return (R_IN);
+	if (kind == TOK_GT)
+		return (R_OUT);
+	if (kind == TOK_DLT)
+		return (R_HEREDOC);
+	return (R_APPEND);
+}
+
+bool	handle_redirection_operator(t_work_context *ctx, t_work_state *state)
+{
+	if (ctx->expecting_redir_arg)
+	{
+		state->ok = false;
+		return (false);
+	}
+	ctx->pending_redir_kind = as_redir_kind(state->kind);
+	ctx->expecting_redir_arg = true;
+	return (true);
+}
