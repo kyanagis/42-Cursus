@@ -11,6 +11,8 @@
 namespace {
 
 const int	kColumnWidth = 10;
+const char	kColumnSeparator = '|';
+const char	*kInvalidIndexMessage = "Invalid index.\n";
 
 bool is_space(char c) {
 	return std::isspace(static_cast<unsigned char>(c)) != 0;
@@ -29,8 +31,8 @@ bool is_blank(const std::string &value) {
 	return true;
 }
 
-bool parse_index(const std::string &input, int *value_out) {
-	int	value = 0;
+bool parse_index(const std::string &input, int &value_out) {
+	int						value = 0;
 	std::string::size_type	i = 0;
 
 	while (i < input.length() && is_space(input[i])) {
@@ -60,15 +62,36 @@ bool parse_index(const std::string &input, int *value_out) {
 		}
 		++i;
 	}
-	*value_out = value;
+	value_out = value;
 	return true;
 }
 
 std::string format_column(const std::string &value) {
-	if (value.length() > 10) {
-		return value.substr(0, 9) + ".";
+	if (value.length() > static_cast<std::string::size_type>(kColumnWidth)) {
+		return value.substr(0, kColumnWidth - 1) + ".";
 	}
 	return value;
+}
+
+void print_summary_header(void) {
+	std::cout << std::setw(kColumnWidth) << "Index" << kColumnSeparator
+		<< std::setw(kColumnWidth) << "First Name" << kColumnSeparator
+		<< std::setw(kColumnWidth) << "Last Name" << kColumnSeparator
+		<< std::setw(kColumnWidth) << "Nickname" << '\n';
+}
+
+void print_summary_row(int index, const Contact &contact) {
+	std::cout << std::setw(kColumnWidth) << index << kColumnSeparator
+		<< std::setw(kColumnWidth) << format_column(contact.get_first_name())
+		<< kColumnSeparator
+		<< std::setw(kColumnWidth) << format_column(contact.get_last_name())
+		<< kColumnSeparator
+		<< std::setw(kColumnWidth) << format_column(contact.get_nickname())
+		<< '\n';
+}
+
+void print_contact_field(const char *label, const std::string &value) {
+	std::cout << label << ": " << value << '\n';
 }
 
 }
@@ -79,13 +102,13 @@ PhoneBook::PhoneBook(void)
 
 bool PhoneBook::read_field(
 	const std::string &prompt,
-	std::string *value
+	std::string &value
 ) const {
 	while (true) {
 		bool	is_too_long;
 
 		std::cout << prompt;
-		if (!read_bounded_line(value, &is_too_long)) {
+		if (!read_bounded_line(value, is_too_long)) {
 			std::cout << '\n';
 			return false;
 		}
@@ -93,7 +116,7 @@ bool PhoneBook::read_field(
 			std::cout << "Field is too long.\n";
 			continue;
 		}
-		if (!is_blank(*value)) {
+		if (!is_blank(value)) {
 			return true;
 		}
 		std::cout << "Field cannot be empty.\n";
@@ -107,19 +130,19 @@ bool PhoneBook::add_contact(void) {
 	std::string	phone_number;
 	std::string	darkest_secret;
 
-	if (!read_field("First name: ", &first_name)) {
+	if (!read_field("First name: ", first_name)) {
 		return false;
 	}
-	if (!read_field("Last name: ", &last_name)) {
+	if (!read_field("Last name: ", last_name)) {
 		return false;
 	}
-	if (!read_field("Nickname: ", &nickname)) {
+	if (!read_field("Nickname: ", nickname)) {
 		return false;
 	}
-	if (!read_field("Phone number: ", &phone_number)) {
+	if (!read_field("Phone number: ", phone_number)) {
 		return false;
 	}
-	if (!read_field("Darkest secret: ", &darkest_secret)) {
+	if (!read_field("Darkest secret: ", darkest_secret)) {
 		return false;
 	}
 	contacts_[next_index_].set(
@@ -138,31 +161,23 @@ bool PhoneBook::add_contact(void) {
 }
 
 void PhoneBook::display_list(void) const {
-	std::cout << std::setw(kColumnWidth) << "Index" << "|"
-		<< std::setw(kColumnWidth) << "First Name" << "|"
-		<< std::setw(kColumnWidth) << "Last Name" << "|"
-		<< std::setw(kColumnWidth) << "Nickname" << '\n';
+	print_summary_header();
 	for (int i = 0; i < size_; ++i) {
-		std::cout << std::setw(kColumnWidth) << i << "|"
-			<< std::setw(kColumnWidth)
-			<< format_column(contacts_[i].get_first_name())
-			<< "|"
-			<< std::setw(kColumnWidth)
-			<< format_column(contacts_[i].get_last_name())
-			<< "|"
-			<< std::setw(kColumnWidth)
-			<< format_column(contacts_[i].get_nickname())
-			<< '\n';
+		print_summary_row(i, contacts_[i]);
 	}
 }
 
 void PhoneBook::display_contact(int index) const {
-	std::cout << "First name: " << contacts_[index].get_first_name() << '\n'
-		<< "Last name: " << contacts_[index].get_last_name() << '\n'
-		<< "Nickname: " << contacts_[index].get_nickname() << '\n'
-		<< "Phone number: " << contacts_[index].get_phone_number() << '\n'
-		<< "Darkest secret: " << contacts_[index].get_darkest_secret()
-		<< '\n';
+	const Contact	&kSelectedContact = contacts_[index];
+
+	print_contact_field("First name", kSelectedContact.get_first_name());
+	print_contact_field("Last name", kSelectedContact.get_last_name());
+	print_contact_field("Nickname", kSelectedContact.get_nickname());
+	print_contact_field("Phone number", kSelectedContact.get_phone_number());
+	print_contact_field(
+		"Darkest secret",
+		kSelectedContact.get_darkest_secret()
+	);
 }
 
 bool PhoneBook::search_contacts(void) const {
@@ -176,16 +191,16 @@ bool PhoneBook::search_contacts(void) const {
 	}
 	display_list();
 	std::cout << "Enter index: ";
-	if (!read_bounded_line(&input, &is_too_long)) {
+	if (!read_bounded_line(input, is_too_long)) {
 		std::cout << '\n';
 		return false;
 	}
 	if (is_too_long) {
-		std::cout << "Invalid index.\n";
+		std::cout << kInvalidIndexMessage;
 		return true;
 	}
-	if (!parse_index(input, &index) || index >= size_) {
-		std::cout << "Invalid index.\n";
+	if (!parse_index(input, index) || index >= size_) {
+		std::cout << kInvalidIndexMessage;
 		return true;
 	}
 	display_contact(index);

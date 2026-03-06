@@ -22,7 +22,7 @@ private:
 
 	void		display_list(void) const;
 	void		display_contact(int index) const;
-	bool		read_field(const std::string &prompt, std::string *value) const;
+	bool		read_field(const std::string &prompt, std::string &value) const;
 };
 
 #endif
