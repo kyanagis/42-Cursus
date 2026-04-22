@@ -22,6 +22,10 @@ bool is_digit(char c) {
 	return std::isdigit(static_cast<unsigned char>(c)) != 0;
 }
 
+bool is_control(char c) {
+	return std::iscntrl(static_cast<unsigned char>(c)) != 0;
+}
+
 bool is_blank(const std::string &value) {
 	for (std::string::size_type i = 0; i < value.length(); ++i) {
 		if (!is_space(value[i])) {
@@ -29,6 +33,15 @@ bool is_blank(const std::string &value) {
 		}
 	}
 	return true;
+}
+
+bool has_control_character(const std::string &value) {
+	for (std::string::size_type i = 0; i < value.length(); ++i) {
+		if (is_control(value[i])) {
+			return true;
+		}
+	}
+	return false;
 }
 
 bool parse_index(const std::string &input, int &value_out) {
@@ -114,6 +127,10 @@ bool PhoneBook::read_field(
 		}
 		if (is_too_long) {
 			std::cout << "Field is too long.\n";
+			continue;
+		}
+		if (has_control_character(value)) {
+			std::cout << "Field contains invalid characters.\n";
 			continue;
 		}
 		if (!is_blank(value)) {
