@@ -27,14 +27,14 @@ int main(void) {
 
 	while (true) {
 		std::cout << kCommandPrompt;
-		if (!read_bounded_line(command, is_too_long)) {
+		if (read_bounded_line(command, is_too_long) == false) {
 			std::cout << '\n';
 			break;
 		}
-		if (is_too_long) {
+		if (is_too_long == true) {
 			continue;
 		}
-		if (!execute_command(command, phone_book)) {
+		if (execute_command(command, phone_book) == false) {
 			break;
 		}
 	}

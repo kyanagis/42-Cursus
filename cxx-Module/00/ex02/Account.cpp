@@ -137,25 +137,12 @@ int Account::_totalAmount = 0;
 int Account::_totalNbDeposits = 0;
 int Account::_totalNbWithdrawals = 0;
 
-int Account::getNbAccounts(void) {
-	return _nbAccounts;
-}
+int Account::getNbAccounts(void) { return _nbAccounts; }
+int Account::getTotalAmount(void) { return _totalAmount; }
+int Account::getNbDeposits(void) { return _totalNbDeposits; }
+int Account::getNbWithdrawals(void) { return _totalNbWithdrawals; }
 
-int Account::getTotalAmount(void) {
-	return _totalAmount;
-}
-
-int Account::getNbDeposits(void) {
-	return _totalNbDeposits;
-}
-
-int Account::getNbWithdrawals(void) {
-	return _totalNbWithdrawals;
-}
-
-void Account::_displayTimestamp(void) {
-	display_timestamp();
-}
+void Account::_displayTimestamp(void) { display_timestamp(); }
 
 void Account::displayAccountsInfos(void) {
 	_displayTimestamp();
@@ -171,7 +158,7 @@ Account::Account(int initial_deposit)
 		_amount(get_initial_amount(_totalAmount, initial_deposit)),
 		_nbDeposits(0),
 		_nbWithdrawals(0) {
-	if (can_increment_int(_nbAccounts)) {
+	if (can_increment_int(_nbAccounts) == true) {
 		++_nbAccounts;
 	}
 	if (!ensure_close_capacity(_accountIndex)) {
@@ -189,7 +176,7 @@ Account::~Account(void) {
 	if (_nbAccounts > 0) {
 		--_nbAccounts;
 	}
-	if (can_sub_int(_totalAmount, _amount)) {
+	if (can_sub_int(_totalAmount, _amount) == true) {
 		_totalAmount -= _amount;
 	}
 	if (_nbAccounts == 0) {

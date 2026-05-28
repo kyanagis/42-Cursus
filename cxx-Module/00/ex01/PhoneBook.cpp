@@ -14,17 +14,9 @@ const int	kColumnWidth = 10;
 const char	kColumnSeparator = '|';
 const char	*kInvalidIndexMessage = "Invalid index.\n";
 
-bool is_space(char c) {
-	return std::isspace(static_cast<unsigned char>(c)) != 0;
-}
-
-bool is_digit(char c) {
-	return std::isdigit(static_cast<unsigned char>(c)) != 0;
-}
-
-bool is_control(char c) {
-	return std::iscntrl(static_cast<unsigned char>(c)) != 0;
-}
+inline bool is_space(char c) { return std::isspace(static_cast<unsigned char>(c)) != 0; }
+inline bool is_digit(char c) { return std::isdigit(static_cast<unsigned char>(c)) != 0; }
+inline bool is_control(char c) { return std::iscntrl(static_cast<unsigned char>(c)) != 0; }
 
 bool is_blank(const std::string &value) {
 	for (std::string::size_type i = 0; i < value.length(); ++i) {
@@ -57,10 +49,10 @@ bool parse_index(const std::string &input, int &value_out) {
 	while (i < input.length()) {
 		char	ch = input[i];
 
-		if (is_space(ch)) {
+		if (is_space(ch) == true) {
 			break;
 		}
-		if (!is_digit(ch)) {
+		if (is_digit(ch) == false) {
 			return false;
 		}
 		if (value > (INT_MAX - (ch - '0')) / 10) {
@@ -70,7 +62,7 @@ bool parse_index(const std::string &input, int &value_out) {
 		++i;
 	}
 	while (i < input.length()) {
-		if (!is_space(input[i])) {
+		if (is_space(input[i]) == false) {
 			return false;
 		}
 		++i;
@@ -103,9 +95,7 @@ void print_summary_row(int index, const Contact &contact) {
 		<< '\n';
 }
 
-void print_contact_field(const char *label, const std::string &value) {
-	std::cout << label << ": " << value << '\n';
-}
+void print_contact_field(const char *label, const std::string &value) { std::cout << label << ": " << value << '\n'; }
 
 }
 
@@ -113,27 +103,24 @@ PhoneBook::PhoneBook(void)
 	: size_(0), next_index_(0) {
 }
 
-bool PhoneBook::read_field(
-	const std::string &prompt,
-	std::string &value
-) const {
+bool PhoneBook::read_field(const std::string &prompt,std::string &value) const {
 	while (true) {
 		bool	is_too_long;
 
 		std::cout << prompt;
-		if (!read_bounded_line(value, is_too_long)) {
+		if (read_bounded_line(value, is_too_long) == false) {
 			std::cout << '\n';
 			return false;
 		}
-		if (is_too_long) {
+		if (is_too_long == true) {
 			std::cout << "Field is too long.\n";
 			continue;
 		}
-		if (has_control_character(value)) {
+		if (has_control_character(value) == true) {
 			std::cout << "Field contains invalid characters.\n";
 			continue;
 		}
-		if (!is_blank(value)) {
+		if (is_blank(value) == false) {
 			return true;
 		}
 		std::cout << "Field cannot be empty.\n";
@@ -147,21 +134,12 @@ bool PhoneBook::add_contact(void) {
 	std::string	phone_number;
 	std::string	darkest_secret;
 
-	if (!read_field("First name: ", first_name)) {
-		return false;
-	}
-	if (!read_field("Last name: ", last_name)) {
-		return false;
-	}
-	if (!read_field("Nickname: ", nickname)) {
-		return false;
-	}
-	if (!read_field("Phone number: ", phone_number)) {
-		return false;
-	}
-	if (!read_field("Darkest secret: ", darkest_secret)) {
-		return false;
-	}
+	if (read_field("First name: ", first_name) == false) { return false; }
+	if (read_field("Last name: ", last_name) == false) { return false; }
+	if (read_field("Nickname: ", nickname) == false) { return false; }
+	if (read_field("Phone number: ", phone_number) == false) { return false;}
+	if (read_field("Darkest secret: ", darkest_secret) == false) { return false; }
+
 	contacts_[next_index_].set(
 		first_name,
 		last_name,
@@ -191,10 +169,7 @@ void PhoneBook::display_contact(int index) const {
 	print_contact_field("Last name", kSelectedContact.get_last_name());
 	print_contact_field("Nickname", kSelectedContact.get_nickname());
 	print_contact_field("Phone number", kSelectedContact.get_phone_number());
-	print_contact_field(
-		"Darkest secret",
-		kSelectedContact.get_darkest_secret()
-	);
+	print_contact_field("Darkest secret",kSelectedContact.get_darkest_secret());
 }
 
 bool PhoneBook::search_contacts(void) const {
@@ -208,15 +183,15 @@ bool PhoneBook::search_contacts(void) const {
 	}
 	display_list();
 	std::cout << "Enter index: ";
-	if (!read_bounded_line(input, is_too_long)) {
+	if (read_bounded_line(input, is_too_long) == false) {
 		std::cout << '\n';
 		return false;
 	}
-	if (is_too_long) {
+	if (is_too_long == true) {
 		std::cout << kInvalidIndexMessage;
 		return true;
 	}
-	if (!parse_index(input, index) || index >= size_) {
+	if (parse_index(input, index) == false || index >= size_) {
 		std::cout << kInvalidIndexMessage;
 		return true;
 	}

@@ -1,6 +1,6 @@
 NAME	= account
 CXX		= c++
-CXXFLAGS= -Wall -Wextra -Werror -std=c++98
+CXXFLAGS= -Wall -Wextra -Werror -std=c++98 -pedantic
 SRCS	= Account.cpp tests.cpp
 OBJDIR	= obj
 OBJS	= $(SRCS:%.cpp=$(OBJDIR)/%.o)
