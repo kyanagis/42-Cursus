@@ -7,13 +7,13 @@ Zombie::Zombie() : name_("no name") {
 }
 
 Zombie::~Zombie() {
-	std::cout << name_ << " is destroyed" << std::endl;
+	std::cout << name_ << " is destroyed" << '\n';
 }
 
 void Zombie::announce(void) const {
-	std::cout << name_ << ": BraiiiiiiinnnzzzZ..." << std::endl;
+	std::cout << name_ << ": BraiiiiiiinnnzzzZ..." << '\n';
 }
 
-void Zombie::setName(const std::string& name) {
+void Zombie::set_name(const std::string& name) {
 	name_ = name;
 }
