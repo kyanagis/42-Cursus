@@ -3,20 +3,13 @@
 #include <iostream>
 #include <string>
 
-Zombie::Zombie() : name_("no name") {
-}
-
 Zombie::Zombie(const std::string& name) : name_(name) {
 }
 
 Zombie::~Zombie() {
-	std::cout << name_ << " is destroyed" << std::endl;
+	std::cout << name_ << " is destroyed" << '\n';
 }
 
 void Zombie::announce(void) const {
-	std::cout << name_ << ": BraiiiiiiinnnzzzZ..." << std::endl;
-}
-
-void Zombie::setName(const std::string& name) {
-	name_ = name;
+	std::cout << name_ << ": BraiiiiiiinnnzzzZ..." << '\n';
 }

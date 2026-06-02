@@ -2,17 +2,21 @@
 
 #include "Zombie.hpp"
 
-int main(void) {
-	Zombie* heapZombie = newZombie("Heap");
-	if (heapZombie == NULL) {
+static int heap_zombie(void) {
+	Zombie* zombie = newZombie("Heap");
+	if (zombie == NULL) {
 		return 1;
 	}
-	heapZombie->announce();
-	delete heapZombie;
+	zombie->announce();
+	delete zombie;
+	return 0;
+}
 
-	std::cout << "---" << std::endl;
-
+int main(void) {
+	if (heap_zombie() != 0) {
+		return 1;
+	}
+	std::cout << "---" << '\n';
 	randomChump("Stack");
-
 	return 0;
 }
