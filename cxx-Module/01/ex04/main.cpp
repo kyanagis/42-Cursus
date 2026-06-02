@@ -44,6 +44,9 @@ static bool writeFile(const std::string& filename, const std::string& content) {
 
 	output << content;
 	output.close();
+	if (output.fail()) {
+		return false;
+	}
 	return true;
 }
 

@@ -7,7 +7,6 @@ int main(void) {
 	Zombie* horde = zombieHorde(kCount, "Horde");
 
 	if (horde == NULL) {
-		std::cout << "zombieHorde returned NULL" << std::endl;
 		return 1;
 	}
 
