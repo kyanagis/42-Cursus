@@ -5,11 +5,7 @@
 
 class Weapon {
 public:
-	Weapon();
 	explicit Weapon(const std::string& type);
-	Weapon(const Weapon& other);
-	Weapon& operator=(const Weapon& other);
-	~Weapon();
 
 	const std::string& getType(void) const;
 	void setType(const std::string& type);
@@ -17,5 +13,13 @@ public:
 private:
 	std::string type_;
 };
+
+inline const std::string& Weapon::getType(void) const {
+	return type_;
+}
+
+inline void Weapon::setType(const std::string& type) {
+	type_ = type;
+}
 
 #endif
