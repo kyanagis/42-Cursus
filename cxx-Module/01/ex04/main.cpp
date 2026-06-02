@@ -3,13 +3,14 @@
 #include <sstream>
 #include <string>
 
-static std::string replaceAll(const std::string& content,
-							  const std::string& s1, const std::string& s2) {
+static std::string replace_all(const std::string& content,
+								const std::string& s1, const std::string& s2) {
 	if (s1.empty()) {
 		return content;
 	}
 
 	std::string result;
+	result.reserve(content.size());
 	std::string::size_type pos = 0;
 	std::string::size_type found = content.find(s1, pos);
 
@@ -23,7 +24,7 @@ static std::string replaceAll(const std::string& content,
 	return result;
 }
 
-static bool readFile(const std::string& filename, std::string& out) {
+static bool read_file(const std::string& filename, std::string& out) {
 	std::ifstream input(filename.c_str());
 	if (!input.is_open()) {
 		return false;
@@ -36,7 +37,8 @@ static bool readFile(const std::string& filename, std::string& out) {
 	return true;
 }
 
-static bool writeFile(const std::string& filename, const std::string& content) {
+static bool write_file(const std::string& filename,
+						const std::string& content) {
 	std::ofstream output(filename.c_str());
 	if (!output.is_open()) {
 		return false;
@@ -53,7 +55,7 @@ static bool writeFile(const std::string& filename, const std::string& content) {
 int main(int argc, char** argv) {
 	if (argc != 4) {
 		std::cerr << "Usage: " << argv[0]
-				  << " <filename> <s1> <s2>" << std::endl;
+					<< " <filename> <s1> <s2>" << '\n';
 		return 1;
 	}
 
@@ -63,21 +65,21 @@ int main(int argc, char** argv) {
 
 	if (s1.empty()) {
 		std::cerr << "Error: s1 (the string to replace) must not be empty"
-				  << std::endl;
+					<< '\n';
 		return 1;
 	}
 
 	std::string content;
-	if (!readFile(filename, content)) {
+	if (!read_file(filename, content)) {
 		std::cerr << "Error: cannot open file '" << filename << "'"
-				  << std::endl;
+					<< '\n';
 		return 1;
 	}
 
-	std::string replaced = replaceAll(content, s1, s2);
-	if (!writeFile(filename + ".replace", replaced)) {
+	std::string replaced = replace_all(content, s1, s2);
+	if (!write_file(filename + ".replace", replaced)) {
 		std::cerr << "Error: cannot create file '"
-				  << filename << ".replace'" << std::endl;
+					<< filename << ".replace'" << '\n';
 		return 1;
 	}
 
