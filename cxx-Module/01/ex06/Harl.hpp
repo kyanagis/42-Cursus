@@ -16,7 +16,7 @@ private:
 	void warning(void);
 	void error(void);
 
-	int levelToIndex(const std::string& level) const;
+	int level_to_index(const std::string& level) const;
 };
 
 #endif
