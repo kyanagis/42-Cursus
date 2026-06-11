@@ -17,7 +17,7 @@ static void check(const char* label, bool actual, bool expected) {
 	}
 	std::cout << label << ": " << side(actual)
 				<< " (expected " << side(expected) << ") " << verdict
-				<< std::endl;
+				<< '\n';
 }
 
 int main(void) {
