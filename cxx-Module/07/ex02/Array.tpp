@@ -5,26 +5,41 @@
 #include <stdexcept>
 
 template <typename T>
-Array<T>::Array() : _data(new T[0]()), _size(0)
+Array<T>::Array() : _data(0), _size(0)
 {
 }
 
 template <typename T>
-Array<T>::Array(unsigned int n) : _data(new T[n]()), _size(n)
+Array<T>::Array(unsigned int n) : _data(0), _size(n)
 {
+	if (_size > 0)
+		_data = new T[_size]();
 }
 
 template <typename T>
 Array<T>::Array(const Array& other)
-	: _data(new T[other._size]()), _size(other._size)
+	: _data(0), _size(other._size)
 {
 	unsigned int i;
 
+	if (_size == 0)
+		return;
+	_data = new T[_size]();
 	i = 0;
-	while (i < _size)
+	try
 	{
-		_data[i] = other._data[i];
-		++i;
+		while (i < _size)
+		{
+			_data[i] = other._data[i];
+			++i;
+		}
+	}
+	catch (...)
+	{
+		delete[] _data;
+		_data = 0;
+		_size = 0;
+		throw;
 	}
 }
 
@@ -33,19 +48,14 @@ Array<T>& Array<T>::operator=(const Array& other)
 {
 	if (this != &other)
 	{
-		T* new_data;
-		unsigned int i;
+		Array<T> tmp(other);
+		T* old_data = _data;
+		unsigned int old_size = _size;
 
-		new_data = new T[other._size]();
-		i = 0;
-		while (i < other._size)
-		{
-			new_data[i] = other._data[i];
-			++i;
-		}
-		delete[] _data;
-		_data = new_data;
-		_size = other._size;
+		_data = tmp._data;
+		_size = tmp._size;
+		tmp._data = old_data;
+		tmp._size = old_size;
 	}
 	return *this;
 }
