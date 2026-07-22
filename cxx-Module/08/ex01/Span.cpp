@@ -3,11 +3,18 @@
 #include <algorithm>
 #include <limits>
 
+namespace {
+
+unsigned int gap_between(int low, int high) {
+	return static_cast<unsigned int>(high) - static_cast<unsigned int>(low);
+}
+
+}
+
 Span::Span() : maxSize_(0) {
 }
 
 Span::Span(unsigned int maxSize) : maxSize_(maxSize) {
-	numbers_.reserve(maxSize);
 }
 
 Span::Span(const Span& other)
@@ -32,16 +39,19 @@ void Span::addNumber(int number) {
 	numbers_.push_back(number);
 }
 
-int Span::shortestSpan() const {
+unsigned int Span::shortestSpan() const {
 	if (numbers_.size() < 2) {
 		throw NoSpanException();
 	}
 	std::vector<int> sorted(numbers_);
 	std::sort(sorted.begin(), sorted.end());
 
-	int shortest = std::numeric_limits<int>::max();
+	unsigned int shortest = std::numeric_limits<unsigned int>::max();
 	for (std::size_t i = 1; i < sorted.size(); ++i) {
-		int gap = sorted[i] - sorted[i - 1];
+		unsigned int gap = gap_between(sorted[i - 1], sorted[i]);
+		if (gap == 0) {
+			return 0;
+		}
 		if (gap < shortest) {
 			shortest = gap;
 		}
@@ -49,7 +59,7 @@ int Span::shortestSpan() const {
 	return shortest;
 }
 
-int Span::longestSpan() const {
+unsigned int Span::longestSpan() const {
 	if (numbers_.size() < 2) {
 		throw NoSpanException();
 	}
@@ -57,7 +67,7 @@ int Span::longestSpan() const {
 		std::min_element(numbers_.begin(), numbers_.end());
 	std::vector<int>::const_iterator high =
 		std::max_element(numbers_.begin(), numbers_.end());
-	return *high - *low;
+	return gap_between(*low, *high);
 }
 
 unsigned int Span::size() const {

@@ -15,6 +15,10 @@ public:
 	MutantStack() {
 	}
 
+	explicit MutantStack(const Container& container)
+		: std::stack<T, Container>(container) {
+	}
+
 	MutantStack(const MutantStack& other) : std::stack<T, Container>(other) {
 	}
 

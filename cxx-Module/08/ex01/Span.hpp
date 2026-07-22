@@ -2,8 +2,8 @@
 #define SPAN_HPP
 
 #include <cstddef>
+#include <exception>
 #include <iterator>
-#include <stdexcept>
 #include <vector>
 
 class Span {
@@ -15,20 +15,11 @@ public:
 	~Span();
 
 	void addNumber(int number);
-	int shortestSpan() const;
-	int longestSpan() const;
+	unsigned int shortestSpan() const;
+	unsigned int longestSpan() const;
 
 	unsigned int size() const;
 	unsigned int capacity() const;
-
-	template <typename InputIt>
-	void add_range(InputIt first, InputIt last) {
-		std::size_t extra = std::distance(first, last);
-		if (numbers_.size() + extra > maxSize_) {
-			throw std::out_of_range("Span: range exceeds capacity");
-		}
-		numbers_.insert(numbers_.end(), first, last);
-	}
 
 	class FullException : public std::exception {
 	public:
@@ -39,6 +30,18 @@ public:
 	public:
 		virtual const char* what() const throw();
 	};
+
+	template <typename ForwardIt>
+	void addRange(ForwardIt first, ForwardIt last) {
+		std::ptrdiff_t extra = std::distance(first, last);
+
+		if (extra < 0 || static_cast<std::size_t>(extra)
+				> maxSize_ - numbers_.size()) {
+			throw FullException();
+		}
+		numbers_.reserve(numbers_.size() + static_cast<std::size_t>(extra));
+		numbers_.insert(numbers_.end(), first, last);
+	}
 
 private:
 	unsigned int maxSize_;
