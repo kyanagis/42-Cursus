@@ -28,38 +28,98 @@ void search_list(const std::list<int>& numbers, int value) {
 	}
 }
 
-void print_entry(std::size_t index, const int* element,
-	const int* base) {
+void print_head() {
+	std::cout << "  slot | address        |   offset |  value\n";
+	std::cout << "  -----+----------------+----------+--------\n";
+}
+
+const char* hit_mark(const int* element, const int* hit) {
+	if (element == hit) {
+		return "  <- easyfind hit";
+	}
+	return "";
+}
+
+void print_row(std::size_t slot, const int* element, const int* base,
+	const char* mark) {
 	std::ptrdiff_t offset;
 
 	offset = reinterpret_cast<const char*>(element)
 		- reinterpret_cast<const char*>(base);
-	std::cout << "  [" << index << "] value " << std::setw(3) << *element
-		<< " @ " << element
-		<< "  offset " << std::showpos << std::setw(8) << offset
-		<< std::noshowpos << " bytes\n";
+	std::cout << "  [" << std::setw(2) << slot << "] | "
+		<< std::setw(14) << element << " | "
+		<< std::showpos << std::setw(8) << offset << std::noshowpos
+		<< " | " << std::setw(6) << *element << mark << '\n';
 }
 
-void print_vector_addresses(const std::vector<int>& numbers) {
-	if (numbers.empty()) {
+template <typename It>
+void dump_map(const char* label, It first, It last, const int* hit) {
+	std::size_t slot;
+	const int* base;
+
+	std::cout << "=== memory map: " << label << " ===\n";
+	if (first == last) {
+		std::cout << "  (empty)\n";
 		return;
 	}
-	for (std::size_t i = 0; i < numbers.size(); ++i) {
-		print_entry(i, &numbers[i], &numbers[0]);
+	base = &*first;
+	std::cout << "  base = slot [ 0] @ " << base
+		<< ", offsets in bytes (sizeof(int) = " << sizeof(int) << ")\n";
+	print_head();
+	slot = 0;
+	while (first != last) {
+		print_row(slot, &*first, base, hit_mark(&*first, hit));
+		++slot;
+		++first;
 	}
 }
 
-void print_list_addresses(const std::list<int>& numbers) {
-	std::list<int>::const_iterator it;
+void print_ascii(const unsigned char* bytes, std::size_t count) {
 	std::size_t i;
 
-	if (numbers.empty()) {
-		return;
+	std::cout << " |";
+	for (i = 0; i < count; ++i) {
+		if (bytes[i] >= 32 && bytes[i] < 127) {
+			std::cout << static_cast<char>(bytes[i]);
+		} else {
+			std::cout << '.';
+		}
 	}
-	i = 0;
-	for (it = numbers.begin(); it != numbers.end(); ++it) {
-		print_entry(i, &*it, &*numbers.begin());
-		++i;
+	std::cout << "|\n";
+}
+
+void print_hex_line(std::size_t offset, const unsigned char* bytes,
+	std::size_t count) {
+	std::size_t i;
+
+	std::cout << "  +" << std::setw(4) << std::setfill('0') << offset
+		<< std::setfill(' ');
+	for (i = 0; i < 16; ++i) {
+		if (i < count) {
+			std::cout << ' ' << std::hex << std::setw(2) << std::setfill('0')
+				<< static_cast<unsigned int>(bytes[i]) << std::dec
+				<< std::setfill(' ');
+		} else {
+			std::cout << "   ";
+		}
+	}
+	print_ascii(bytes, count);
+}
+
+void hexdump(const int* base, std::size_t bytes) {
+	const unsigned char* raw;
+	std::size_t done;
+	std::size_t chunk;
+
+	raw = reinterpret_cast<const unsigned char*>(base);
+	done = 0;
+	while (done < bytes) {
+		chunk = bytes - done;
+		if (chunk > 16) {
+			chunk = 16;
+		}
+		print_hex_line(done, raw + done, chunk);
+		done += chunk;
 	}
 }
 
@@ -79,23 +139,26 @@ void show_memory_layout() {
 	std::list<int> nodes;
 
 	for (int i = 0; i < 5; ++i) {
-		contiguous.push_back(i);
-		nodes.push_back(i);
+		contiguous.push_back(i * 11);
+		nodes.push_back(i * 11);
 	}
-	std::cout << "offset = bytes from the first element (sizeof(int) = "
-		<< sizeof(int) << ")\n";
-	std::cout << "--- vector: address == base + index * sizeof(int) ---\n";
-	print_vector_addresses(contiguous);
-	std::cout << "offset grows by exactly " << sizeof(int)
-		<< " each step: one contiguous block\n";
-	std::cout << "--- list: independently allocated nodes ---\n";
-	print_list_addresses(nodes);
-	std::cout << "offset jumps by arbitrary amounts: one node per element\n";
+	dump_map("std::vector<int> (one contiguous buffer)", contiguous.begin(),
+		contiguous.end(), &*easyfind(contiguous, 33));
+	std::cout << "offset == slot * " << sizeof(int)
+		<< ": easyfind walks a flat array, the hit is at a fixed stride\n";
+	std::cout << "=== hexdump: the whole vector buffer ===\n";
+	hexdump(&contiguous[0], contiguous.size() * sizeof(int));
+	std::cout << "little endian: 33 shows up as 21 00 00 00\n";
+
+	dump_map("std::list<int> (independent nodes)", nodes.begin(), nodes.end(),
+		&*easyfind(nodes, 33));
+	std::cout << "offsets jump by arbitrary amounts: one heap node per slot, "
+		"no stride\n";
 	reuse_freed_node(nodes);
-	std::cout << "--- list: after erase and push_back ---\n";
-	print_list_addresses(nodes);
-	std::cout << "offset can even go negative: traversal order no longer "
-		"follows address order\n";
+	dump_map("std::list<int> after erase + push_back", nodes.begin(),
+		nodes.end(), &*easyfind(nodes, 99));
+	std::cout << "offsets can go negative and the freed node gets reused: "
+		"traversal\norder no longer follows address order\n";
 }
 
 }
